@@ -5,7 +5,7 @@ import {
   signOut,
   onAuthStateChanged 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
 export const authService = {
   async signup(email, password, role, name) {

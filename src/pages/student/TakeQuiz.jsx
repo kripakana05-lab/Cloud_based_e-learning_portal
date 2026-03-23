@@ -51,7 +51,10 @@ const TakeQuiz = () => {
   const calculateScore = () => {
     let s = 0;
     quiz.questions.forEach((q, index) => {
-      if (selectedOptions[index] === q.correctAnswer) {
+      const selected = selectedOptions[index];
+      // Only count as correct if the user selected an option AND it matches the correct answer
+      // Using == to handle potential string/number mismatches from Firestore
+      if (selected !== undefined && q.correctAnswer !== undefined && selected == q.correctAnswer) {
         s++;
       }
     });

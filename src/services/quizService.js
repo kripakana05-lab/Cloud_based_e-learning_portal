@@ -56,8 +56,7 @@ export const quizService = {
   async getStudentAttempts(uid) {
     const q = query(
       collection(db, 'attempts'), 
-      where('studentId', '==', uid),
-      orderBy('completedAt', 'desc')
+      where('studentId', '==', uid)
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

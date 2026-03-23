@@ -1,16 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, HelpCircle, ArrowRight, BookMarked, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuiz } from '../../context/QuizContext';
+import { useAuth } from '../../context/AuthContext';
 
 const StudentDashboard = () => {
-  const { quizzes, loading, fetchQuizzes } = useQuiz();
+  const { quizzes, loading, fetchQuizzes, fetchStudentAttempts } = useQuiz();
+  const { currentUser } = useAuth();
+  const [attempts, setAttempts] = useState([]);
 
   useEffect(() => {
     fetchQuizzes();
-  }, []);
+    const loadAttempts = async () => {
+      if (currentUser) {
+        const data = await fetchStudentAttempts();
+        setAttempts(data || []);
+      }
+    };
+    loadAttempts();
+  }, [fetchQuizzes, fetchStudentAttempts, currentUser]);
+
+  const quizzesTaken = new Set(attempts.map(a => a.quizId)).size;
+  const progress = quizzes.length > 0 ? Math.round((quizzesTaken / quizzes.length) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -95,13 +108,15 @@ const StudentDashboard = () => {
                   <div className="mt-4 space-y-4">
                     <div className="flex justify-between items-end">
                       <span className="text-indigo-100 font-bold opacity-80 text-sm uppercase">Quizzes Taken</span>
-                      <span className="text-3xl font-black">12</span>
+                      <span className="text-3xl font-black">{quizzesTaken}</span>
                     </div>
                     <div className="w-full bg-indigo-500/50 rounded-full h-2 overflow-hidden">
-                      <div className="bg-white h-full transition-all duration-1000" style={{ width: '65%' }}></div>
+                      <div className="bg-white h-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                     </div>
                     <p className="text-indigo-100 text-xs font-bold leading-relaxed">
-                      You're in the top 15% of students this week! Keep it up.
+                      {progress === 100 ? "Amazing! You've completed all available quizzes." : 
+                       progress > 0 ? `You've completed ${progress}% of available quizzes. Keep going!` : 
+                       "Start your first quiz today to track your progress!"}
                     </p>
                   </div>
                </div>

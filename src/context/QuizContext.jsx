@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { quizService } from '../services/quizService';
 import { useAuth } from './AuthContext';
 
@@ -12,7 +12,7 @@ export const QuizProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const { currentUser } = useAuth();
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = useCallback(async () => {
     setLoading(true);
     try {
       const data = await quizService.getAllQuizzes();
@@ -22,9 +22,9 @@ export const QuizProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createQuiz = async (quizData) => {
+  const createQuiz = useCallback(async (quizData) => {
     try {
       const id = await quizService.createQuiz(quizData);
       await fetchQuizzes(); // Refresh list
@@ -32,27 +32,27 @@ export const QuizProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  };
+  }, [fetchQuizzes]);
 
-  const updateQuiz = async (id, quizData) => {
+  const updateQuiz = useCallback(async (id, quizData) => {
     try {
       await quizService.updateQuiz(id, quizData);
       await fetchQuizzes();
     } catch (err) {
       throw err;
     }
-  };
+  }, [fetchQuizzes]);
 
-  const deleteQuiz = async (id) => {
+  const deleteQuiz = useCallback(async (id) => {
     try {
       await quizService.deleteQuiz(id);
       setQuizzes(quizzes.filter(q => q.id !== id));
     } catch (err) {
       throw err;
     }
-  };
+  }, [quizzes]);
 
-  const submitAttempt = async (quizId, score, totalQuestions, answers) => {
+  const submitAttempt = useCallback(async (quizId, score, totalQuestions, answers) => {
     if (!currentUser) return;
     try {
       await quizService.saveQuizAttempt({
@@ -66,9 +66,9 @@ export const QuizProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  };
+  }, [currentUser]);
 
-  const fetchStudentAttempts = async () => {
+  const fetchStudentAttempts = useCallback(async () => {
     if (!currentUser) return [];
     try {
       return await quizService.getStudentAttempts(currentUser.uid);
@@ -76,11 +76,11 @@ export const QuizProvider = ({ children }) => {
       console.error("Failed to fetch attempts", err);
       return [];
     }
-  };
+  }, [currentUser]);
 
-  const getQuiz = async (id) => {
+  const getQuiz = useCallback(async (id) => {
     return await quizService.getQuizById(id);
-  };
+  }, []);
 
   const value = {
     quizzes,
